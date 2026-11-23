@@ -1,0 +1,39 @@
+# The Resistance
+
+An interactive exhibit about effort, decisions and the anterior midcingulate cortex (aMCC).
+React + TypeScript + Vite + React Three Fiber. Runs entirely in the browser: no backend, no API keys.
+
+```bash
+npm install
+npm run dev      # http://localhost:5173
+npm run build    # static site in dist/
+```
+
+## Journey
+
+Intro → 3 questions (couch, workout, phone) → reveal (3D head, aMCC highlighted) → simulator → long-term trajectory → science.
+
+To jump straight to a screen while developing, add `?demo=q|reveal|sim|traj|science` to the URL.
+
+## Models (illustrative, not validated)
+
+- `src/model/effortModel.ts` computes `V = R − E·C` and `P = 1 / (1 + e^(−6V))`, with R = reward/10, E = effort/10 and C = sensitivity/5.
+  Your choices set the starting effort sensitivity.
+- `src/model/trajectory.ts` tracks a dimensionless persistence index that changes by its expected value at each modeled decision:
+  `I += α·p·(1−I) − β·(1−p)·I`. Here `p` mixes 50/50 your actual choice rate with the effort model, and the index slightly lowers the modeled effort sensitivity.
+
+Neither model measures brain activity or predicts behaviour, brain change, ageing, dementia or Alzheimer's disease.
+
+## 3D anatomy
+
+The brain is generated in code in `src/three/anatomy.ts`. The head is a real 3D scan loaded from `public/models/head.glb`.
+- The cortex is made of shaped ellipsoid hemispheres folded with domain-warped simplex noise, plus Sylvian and central sulci.
+- The cerebellum has folia and sits above a brainstem.
+- The head is "Infinite, 3D Head Scan" by Lee Perry-Smith (Infinite Realities, based on a work at www.triplegangers.com), licensed under
+  [CC BY 3.0](https://creativecommons.org/licenses/by/3.0/); see `public/models/head-LICENSE.txt`.
+  `scripts/clean-head.mjs` derives `head.glb` from the three.js example copy (`examples/models/gltf/LeePerrySmith/LeePerrySmith.glb`).
+  It welds the UV seams and strips interior geometry (mouth and eye pockets) that would show through a transparent material.
+  At load time the scan is scaled to life size (about 23 cm from crown to chin), seated so the cranial vault encloses the brain, and given a baked cavity term used as soft ambient occlusion.
+- The head is drawn with a semi-transparent porcelain shader (wrap lighting, fresnel rim, cavity occlusion) in two passes: faint inner faces, then the outer surface.
+- The default view is a three-quarter profile with a gentle idle sway; dragging rotates freely. Add `?az=<degrees>` to pin the camera azimuth (0 = facing the camera).
+- The aMCC marker's position is approximate and only illustrative.
